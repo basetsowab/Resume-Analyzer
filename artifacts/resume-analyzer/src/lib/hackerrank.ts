@@ -68,3 +68,49 @@ export async function scoreWithHackerRank(params: {
   if (!res.ok) throw new Error(await parseError(res));
   return (await res.json()) as HackerRankResult;
 }
+
+// ---------------------------------------------------------------------------
+// ATS template grader (rule-based, no API key needed)
+// ---------------------------------------------------------------------------
+
+export interface AtsCheck {
+  key: string;
+  group: string;
+  label: string;
+  points: number;
+  max: number;
+  passed: boolean;
+  detail: string;
+  fix: string | null;
+}
+
+export interface AtsGrade {
+  score: number;
+  grade: string;
+  groups: { name: string; points: number; max: number }[];
+  checks: AtsCheck[];
+  top_fixes: string[];
+  bullets: { total: number; needs_work: { text: string; issues: string[] }[] };
+  stats: { words: number; pages: number | null; bullets: number };
+}
+
+export async function gradeAts(input: { file?: File; text?: string }): Promise<AtsGrade> {
+  const form = new FormData();
+  if (input.file) form.append("file", input.file);
+  if (input.text) form.append("text", input.text);
+  const res = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/ats/grade`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return (await res.json()) as AtsGrade;
+}
+
+/** Letter grade on the same scale the ATS grader uses. */
+export function letterGrade(percent: number): string {
+  const scale: [number, string][] = [
+    [93, "A"], [90, "A-"], [87, "B+"], [83, "B"], [80, "B-"],
+    [77, "C+"], [73, "C"], [70, "C-"], [67, "D+"], [60, "D"],
+  ];
+  return scale.find(([cutoff]) => percent >= cutoff)?.[1] ?? "F";
+}

@@ -7,6 +7,7 @@ Endpoints:
     GET  /health           liveness check
     GET  /roles            list roles that resumes can be scored against
     POST /score            upload a resume PDF and get a structured evaluation
+    POST /ats/grade        grade a resume (PDF, DOCX or text) against the ATS resume template
 """
 
 import os
@@ -19,6 +20,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from github import fetch_and_display_github_info
+from ats_grade import grade as ats_grade, parse_docx, parse_pdf, parse_text
 from models import JSONResume, build_evaluation_model
 from pdf import PDFHandler
 from prompt import DEFAULT_MODEL
@@ -183,3 +185,35 @@ def score_resume(
     if include_resume:
         result["resume"] = resume_data.model_dump()
     return result
+
+
+@app.post("/ats/grade")
+def grade_ats(
+    file: Optional[UploadFile] = File(None, description="Resume as PDF or DOCX"),
+    text: Optional[str] = Form(None, description="Resume as plain text"),
+) -> Dict[str, Any]:
+    """Rule-based grade against the ATS resume template. Needs no LLM or API key."""
+    if file is not None and file.filename:
+        data = file.file.read(MAX_UPLOAD_BYTES + 1)
+        if len(data) > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, f"File exceeds {MAX_UPLOAD_BYTES} bytes")
+        name = (file.filename or "").lower()
+        try:
+            if data.startswith(b"%PDF"):
+                resume = parse_pdf(data)
+            elif data.startswith(b"PK") and name.endswith(".docx"):
+                resume = parse_docx(data)
+            else:
+                raise HTTPException(415, "Upload a PDF or a Word .docx file")
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(422, "Could not read that file")
+    elif text and text.strip():
+        resume = parse_text(text)
+    else:
+        raise HTTPException(400, "Send a resume file or paste the resume text")
+
+    if len(resume.lines) < 3:
+        raise HTTPException(422, "Could not find enough text in the resume")
+    return ats_grade(resume)

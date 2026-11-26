@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, AlertTriangle, Star, MinusCircle, Github } from "lucide-react";
-import type { HackerRankResult } from "@/lib/hackerrank";
+import { letterGrade, type HackerRankResult } from "@/lib/hackerrank";
 
 function pctColor(pct: number) {
   if (pct >= 75) return "text-chart-1";
@@ -29,6 +29,7 @@ export function HackerRankResults({ result }: { result: HackerRankResult }) {
           <CardContent className="flex flex-col items-center justify-center">
             <div className={`text-7xl font-bold tracking-tighter ${pctColor(pct)}`}>{result.total_score}</div>
             <div className="text-sm text-muted-foreground mt-1">out of {result.max_score}</div>
+            <div className={`mt-3 text-2xl font-bold ${pctColor(pct)}`}>Grade {letterGrade(pct)}</div>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <Badge variant="outline" className="bg-background">{result.role.replace(/_/g, " ")}</Badge>
               {result.github_used && (

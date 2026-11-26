@@ -29,15 +29,15 @@ router.get("/hackerrank/roles", async (req, res) => {
   }
 });
 
-router.post("/hackerrank/score", async (req, res) => {
+async function forwardMultipart(path: string, req: Request, res: Response) {
   const contentType = req.headers["content-type"];
   if (!contentType?.startsWith("multipart/form-data")) {
-    res.status(415).json({ detail: "Send the resume as multipart/form-data with a 'file' field" });
+    res.status(415).json({ detail: "Send the resume as multipart/form-data" });
     return;
   }
   try {
     // Stream the multipart body straight through; express.json/urlencoded leave it untouched.
-    const upstream = await fetch(`${HIRING_AGENT_URL}/score`, {
+    const upstream = await fetch(`${HIRING_AGENT_URL}${path}`, {
       method: "POST",
       headers: { "content-type": contentType },
       body: Readable.toWeb(req) as unknown as RequestInit["body"],
@@ -47,6 +47,9 @@ router.post("/hackerrank/score", async (req, res) => {
   } catch (err) {
     unavailable(req, res, err);
   }
-});
+}
+
+router.post("/hackerrank/score", (req, res) => forwardMultipart("/score", req, res));
+router.post("/ats/grade", (req, res) => forwardMultipart("/ats/grade", req, res));
 
 export default router;

@@ -8,6 +8,7 @@ import { Home } from "@/pages/Home";
 import { History } from "@/pages/History";
 import { ResumeDetails } from "@/pages/ResumeDetails";
 import { HackerRank } from "@/pages/HackerRank";
+import { AtsGrade } from "@/pages/AtsGrade";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/history" component={History} />
           <Route path="/hackerrank" component={HackerRank} />
+          <Route path="/ats-grade" component={AtsGrade} />
           <Route path="/resumes/:id" component={ResumeDetails} />
           <Route component={NotFound} />
         </Switch>

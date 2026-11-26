@@ -4,6 +4,8 @@ Paste a resume and get an AI-powered analysis: overall score, section scores, st
 
 It also includes a **HackerRank Score** page that runs [HackerRank's open-source hiring agent](https://github.com/interviewstreet/hiring-agent) on an uploaded resume PDF: it extracts the resume, checks the candidate's GitHub projects, and scores them against a role rubric.
 
+The **ATS Grade** page grades a resume (PDF, Word .docx, or pasted text) A–F against a standard one-page ATS resume template. It checks the contact line, the four standard sections and their order, action-verb and quantified bullets, personal pronouns, "Month Year – Month Year" dates, leftover template text, and one-page length, then lists the top fixes and the weakest bullets. It is rule-based, so it needs no API key. The blank template can be downloaded from the page.
+
 ## Stack
 
 - pnpm workspace monorepo, TypeScript 5.9, Node.js 24
