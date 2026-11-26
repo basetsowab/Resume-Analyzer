@@ -143,6 +143,9 @@ components:
         jobTitle:
           type: ["string", "null"]
           description: Optional target job title for context-aware analysis
+        jobDescription:
+          type: ["string", "null"]
+          description: Optional job description to compare the resume against
       required:
         - content
 
@@ -155,6 +158,21 @@ components:
           type: string
         jobTitle:
           type: ["string", "null"]
+        jobDescription:
+          type: ["string", "null"]
+        matchScore:
+          type: ["integer", "null"]
+          description: How well the resume matches the job description, 0-100 (null without a job description)
+        matchedSkills:
+          type: array
+          items:
+            type: string
+          description: Skills and requirements from the job description that the resume shows
+        experienceGaps:
+          type: array
+          items:
+            type: string
+          description: Experience or qualifications the job description asks for that the resume lacks
         overallScore:
           type: integer
           description: Overall resume score 0-100
@@ -195,6 +213,10 @@ components:
         - id
         - content
         - jobTitle
+        - jobDescription
+        - matchScore
+        - matchedSkills
+        - experienceGaps
         - overallScore
         - summary
         - strengths

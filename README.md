@@ -1,6 +1,6 @@
 # AI Resume Analyzer
 
-Paste a resume and get an AI-powered analysis: overall score, section scores, strengths, weaknesses, suggestions, and keywords.
+Paste a resume and, optionally, a job description. The Gemini API analyzes the resume against the job to surface matched skills, missing keywords, and experience gaps, along with an overall score, section scores, strengths, weaknesses, and suggestions.
 
 It also includes a **HackerRank Score** page that runs [HackerRank's open-source hiring agent](https://github.com/interviewstreet/hiring-agent) on an uploaded resume PDF: it extracts the resume, checks the candidate's GitHub projects, and scores them against a role rubric.
 
@@ -13,14 +13,14 @@ The **ATS Grade** page grades a resume (PDF, Word .docx, or pasted text) A–F a
 - **API**: Express 5 (`artifacts/api-server`), served under `/api`
 - **Database**: PostgreSQL + Drizzle ORM (`lib/db`, table `resumes`)
 - **Validation / codegen**: Zod, Orval from the OpenAPI spec in `lib/api-spec`
-- **AI**: OpenAI (`lib/integrations-openai-ai-server`)
+- **AI**: Google Gemini API via the official `@google/genai` SDK with structured JSON output (`artifacts/api-server/src/lib/gemini.ts`)
 - **HackerRank scorer**: Python + FastAPI service in `services/hiring-agent` (MIT licensed, from interviewstreet/hiring-agent), proxied by the API at `/api/hackerrank/*`
 
 ## Setup
 
 ```bash
 pnpm install
-cp .env.example .env   # fill in DATABASE_URL and OPENAI_API_KEY
+cp .env.example .env   # fill in DATABASE_URL and GEMINI_API_KEY
 pnpm --filter @workspace/db run push
 ```
 
@@ -30,7 +30,7 @@ pnpm --filter @workspace/db run push
 cd services/hiring-agent
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # set OPENAI_API_KEY (default model is gpt-5.2)
+cp .env.example .env   # set GEMINI_API_KEY (default model is gemini-2.5-flash)
 ```
 
 ## Run locally

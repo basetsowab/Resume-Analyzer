@@ -14,4 +14,9 @@ export interface AnalyzeResumeBody {
    * @nullable
    */
   jobTitle?: string | null;
+  /**
+   * Optional job description to compare the resume against
+   * @nullable
+   */
+  jobDescription?: string | null;
 }

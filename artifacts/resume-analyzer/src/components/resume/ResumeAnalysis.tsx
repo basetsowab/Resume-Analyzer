@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, AlertTriangle, AlertCircle, TrendingUp } from "lucide-react";
-import type { Resume } from "@workspace/api-client-react/src/generated/api.schemas";
+import { CheckCircle2, AlertTriangle, AlertCircle, TrendingUp, Target } from "lucide-react";
+import type { Resume } from "@workspace/api-client-react";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 
 interface ResumeAnalysisProps {
@@ -59,6 +59,56 @@ export function ResumeAnalysis({ resume }: ResumeAnalysisProps) {
           </CardContent>
         </Card>
       </div>
+
+      {resume.jobDescription && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Target className="h-4 w-4" /> Job Description Match
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col items-center justify-center">
+              <div className={`text-6xl font-bold tracking-tighter ${getScoreColor(resume.matchScore ?? 0)}`}>
+                {resume.matchScore ?? "–"}
+                <span className="text-2xl">%</span>
+              </div>
+              <div className="text-xs text-muted-foreground mt-2 uppercase tracking-wider">Match</div>
+            </div>
+            <div>
+              <h3 className="flex items-center gap-2 text-chart-1 font-bold mb-3 text-sm">
+                <CheckCircle2 className="h-4 w-4" /> Matched Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {resume.matchedSkills.length ? (
+                  resume.matchedSkills.map((s, i) => (
+                    <Badge key={i} variant="secondary" className="font-normal">{s}</Badge>
+                  ))
+                ) : (
+                  <span className="text-sm text-muted-foreground">None found</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <h3 className="flex items-center gap-2 text-chart-3 font-bold mb-3 text-sm">
+                <AlertCircle className="h-4 w-4" /> Experience Gaps
+              </h3>
+              <ul className="space-y-2">
+                {resume.experienceGaps.length ? (
+                  resume.experienceGaps.map((g, i) => (
+                    <li key={i} className="text-sm flex items-start gap-2">
+                      <span className="text-chart-3 mt-0.5 opacity-50">▹</span>
+                      <span>{g}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-sm text-muted-foreground">No major gaps</li>
+                )}
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="col-span-1 lg:col-span-2">
@@ -143,7 +193,9 @@ export function ResumeAnalysis({ resume }: ResumeAnalysisProps) {
             </div>
             <Separator />
             <div>
-              <h4 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-widest">Suggested Additions</h4>
+              <h4 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-widest">
+                {resume.jobDescription ? "Missing From Job Description" : "Suggested Additions"}
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {resume.missingKeywords.map((k, i) => (
                   <Badge key={i} variant="outline" className="border-chart-3/30 text-chart-3 bg-chart-3/5 font-normal">

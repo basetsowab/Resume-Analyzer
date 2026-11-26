@@ -12,11 +12,12 @@ import { ResumeAnalysis } from "@/components/resume/ResumeAnalysis";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListResumesQueryKey, getGetResumeStatsQueryKey } from "@workspace/api-client-react";
-import type { Resume } from "@workspace/api-client-react/src/generated/api.schemas";
+import type { Resume } from "@workspace/api-client-react";
 
 const formSchema = z.object({
   content: z.string().min(100, "Resume must be at least 100 characters to provide meaningful analysis."),
   jobTitle: z.string().optional(),
+  jobDescription: z.string().optional(),
 });
 
 export function Home() {
@@ -40,6 +41,7 @@ export function Home() {
     defaultValues: {
       content: "",
       jobTitle: "",
+      jobDescription: "",
     },
   });
 
@@ -54,7 +56,7 @@ export function Home() {
         <div>
           <h1 className="text-3xl font-mono font-bold tracking-tight mb-2">Initialize Analysis</h1>
           <p className="text-muted-foreground">
-            Paste your resume content below. For context-aware scoring, provide the target job title.
+            Paste your resume and, optionally, a job description. Gemini compares them to surface matched skills, missing keywords, and experience gaps.
           </p>
         </div>
 
@@ -95,6 +97,24 @@ export function Home() {
                 )}
               />
               
+              <FormField
+                control={form.control}
+                name="jobDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-mono">Job Description (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Paste the job posting to compare your resume against it..."
+                        className="min-h-[160px] font-mono text-sm bg-card resize-y"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="content"

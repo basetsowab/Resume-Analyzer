@@ -22,6 +22,23 @@ export const ListResumesResponseItem = zod.object({
   id: zod.number(),
   content: zod.string(),
   jobTitle: zod.string().nullable(),
+  jobDescription: zod.string().nullable(),
+  matchScore: zod
+    .number()
+    .nullable()
+    .describe(
+      "How well the resume matches the job description, 0-100 (null without a job description)",
+    ),
+  matchedSkills: zod
+    .array(zod.string())
+    .describe(
+      "Skills and requirements from the job description that the resume shows",
+    ),
+  experienceGaps: zod
+    .array(zod.string())
+    .describe(
+      "Experience or qualifications the job description asks for that the resume lacks",
+    ),
   overallScore: zod.number().describe("Overall resume score 0-100"),
   summary: zod.string().describe("AI-generated summary of the resume"),
   strengths: zod
@@ -58,6 +75,10 @@ export const AnalyzeResumeBody = zod.object({
     .string()
     .nullish()
     .describe("Optional target job title for context-aware analysis"),
+  jobDescription: zod
+    .string()
+    .nullish()
+    .describe("Optional job description to compare the resume against"),
 });
 
 /**
@@ -71,6 +92,23 @@ export const GetResumeResponse = zod.object({
   id: zod.number(),
   content: zod.string(),
   jobTitle: zod.string().nullable(),
+  jobDescription: zod.string().nullable(),
+  matchScore: zod
+    .number()
+    .nullable()
+    .describe(
+      "How well the resume matches the job description, 0-100 (null without a job description)",
+    ),
+  matchedSkills: zod
+    .array(zod.string())
+    .describe(
+      "Skills and requirements from the job description that the resume shows",
+    ),
+  experienceGaps: zod
+    .array(zod.string())
+    .describe(
+      "Experience or qualifications the job description asks for that the resume lacks",
+    ),
   overallScore: zod.number().describe("Overall resume score 0-100"),
   summary: zod.string().describe("AI-generated summary of the resume"),
   strengths: zod

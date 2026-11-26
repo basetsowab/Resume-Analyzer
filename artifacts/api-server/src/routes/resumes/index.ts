@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, avg, count } from "drizzle-orm";
 import { db, resumesTable } from "@workspace/db";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { analyzeResume, type ResumeAnalysis } from "../../lib/gemini";
 import {
   AnalyzeResumeBody,
   GetResumeParams,
@@ -65,76 +65,30 @@ router.post("/resumes", async (req, res): Promise<void> => {
     return;
   }
 
-  const { content, jobTitle } = parsed.data;
+  const { content, jobTitle, jobDescription } = parsed.data;
+  const jd = jobDescription?.trim() || null;
 
-  const jobContext = jobTitle ? ` The candidate is targeting a role as: ${jobTitle}.` : "";
-
-  const systemPrompt = `You are an expert professional resume coach and HR specialist with 15+ years of experience. Analyze the provided resume and return ONLY a valid JSON object with this exact structure:
-{
-  "overallScore": <integer 0-100>,
-  "summary": "<2-3 sentence overall assessment>",
-  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
-  "weaknesses": ["<weakness 1>", "<weakness 2>", "<weakness 3>"],
-  "suggestions": ["<actionable suggestion 1>", "<actionable suggestion 2>", "<actionable suggestion 3>", "<actionable suggestion 4>"],
-  "keywords": ["<keyword found 1>", "<keyword found 2>", ...],
-  "missingKeywords": ["<missing keyword 1>", "<missing keyword 2>", ...],
-  "sectionScores": {
-    "contactInfo": <integer 0-100>,
-    "workExperience": <integer 0-100>,
-    "education": <integer 0-100>,
-    "skills": <integer 0-100>,
-    "formatting": <integer 0-100>,
-    "impact": <integer 0-100>
-  }
-}
-Be honest, specific, and actionable. Score strictly — a perfect resume is rare.${jobContext}`;
-
-  let analysisResult: {
-    overallScore: number;
-    summary: string;
-    strengths: string[];
-    weaknesses: string[];
-    suggestions: string[];
-    keywords: string[];
-    missingKeywords: string[];
-    sectionScores: {
-      contactInfo: number;
-      workExperience: number;
-      education: number;
-      skills: number;
-      formatting: number;
-      impact: number;
-    };
-  };
-
+  let analysisResult: ResumeAnalysis;
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-5.2",
-      max_completion_tokens: 8192,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: `Please analyze this resume:\n\n${content}` },
-      ],
-    });
-
-    const rawContent = response.choices[0]?.message?.content ?? "{}";
-    const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("No JSON found in response");
-    }
-    analysisResult = JSON.parse(jsonMatch[0]);
+    analysisResult = await analyzeResume({ content, jobTitle, jobDescription: jd });
   } catch (err) {
-    req.log.error({ err }, "Failed to analyze resume with AI");
+    req.log.error({ err }, "Failed to analyze resume with Gemini");
     res.status(500).json({ error: "Failed to analyze resume. Please try again." });
     return;
   }
+
+  const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
 
   const [resume] = await db
     .insert(resumesTable)
     .values({
       content,
       jobTitle: jobTitle ?? null,
-      overallScore: Math.max(0, Math.min(100, Math.round(analysisResult.overallScore))),
+      jobDescription: jd,
+      matchScore: jd && typeof analysisResult.matchScore === "number" ? clamp(analysisResult.matchScore) : null,
+      matchedSkills: jd ? (analysisResult.matchedSkills ?? []) : [],
+      experienceGaps: jd ? (analysisResult.experienceGaps ?? []) : [],
+      overallScore: clamp(analysisResult.overallScore),
       summary: analysisResult.summary ?? "",
       strengths: analysisResult.strengths ?? [],
       weaknesses: analysisResult.weaknesses ?? [],

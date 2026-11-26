@@ -12,6 +12,17 @@ export interface Resume {
   content: string;
   /** @nullable */
   jobTitle: string | null;
+  /** @nullable */
+  jobDescription: string | null;
+  /**
+   * How well the resume matches the job description, 0-100 (null without a job description)
+   * @nullable
+   */
+  matchScore: number | null;
+  /** Skills and requirements from the job description that the resume shows */
+  matchedSkills: string[];
+  /** Experience or qualifications the job description asks for that the resume lacks */
+  experienceGaps: string[];
   /** Overall resume score 0-100 */
   overallScore: number;
   /** AI-generated summary of the resume */
