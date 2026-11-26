@@ -40,7 +40,7 @@ router.post("/hackerrank/score", async (req, res) => {
     const upstream = await fetch(`${HIRING_AGENT_URL}/score`, {
       method: "POST",
       headers: { "content-type": contentType },
-      body: Readable.toWeb(req) as unknown as BodyInit,
+      body: Readable.toWeb(req) as unknown as RequestInit["body"],
       duplex: "half",
     } as RequestInit & { duplex: "half" });
     await forwardResponse(upstream, res);
