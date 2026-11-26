@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { LineChart, History } from "lucide-react";
+import { LineChart, History, Gauge } from "lucide-react";
 
 export function Navbar() {
   return (
@@ -9,7 +9,14 @@ export function Navbar() {
           <LineChart className="h-5 w-5" />
           <span>ResumeTerminal</span>
         </Link>
-        <nav>
+        <nav className="flex items-center gap-6">
+          <Link
+            href="/hackerrank"
+            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Gauge className="h-4 w-4" />
+            <span>HackerRank Score</span>
+          </Link>
           <Link
             href="/history"
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
